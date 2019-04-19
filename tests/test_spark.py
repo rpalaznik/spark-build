@@ -398,3 +398,16 @@ def test_task_stdout():
         assert stdout_file["size"] > 0, "stdout file should have content"
     finally:
         sdk_install.uninstall(utils.SPARK_PACKAGE_NAME, service_name)
+
+
+@pytest.mark.sanity
+def test_mesos_label_support():
+    driver_task_id = utils.submit_job(app_url=utils.SPARK_EXAMPLES,
+                                      app_args="150",
+                                      args=["--conf spark.cores.max=1",
+                                            "--conf spark.mesos.driver.labels=foo:bar", # pass a test label
+                                            "--class org.apache.spark.examples.SparkPi"])
+
+    driver_task_info = sdk_cmd._get_task_info(driver_task_id)
+    test_label_values = [label['value'] for label in driver_task_info['labels'] if label['key'] == 'foo']
+    assert 'bar' in test_label_values
