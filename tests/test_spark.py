@@ -68,8 +68,8 @@ def test_mesos_label_support():
                                             "--class org.apache.spark.examples.SparkPi"])
 
     driver_task_info = sdk_cmd._get_task_info(driver_task_id)
-    test_label_values = [label['value'] for label in driver_task_info['labels'] if label['key'] == 'foo']
-    assert 'bar' in test_label_values
+    expected = {'key': 'foo', 'value': 'bar'}
+    assert expected in driver_task_info['labels']
 
 
 def retry_if_false(result):
