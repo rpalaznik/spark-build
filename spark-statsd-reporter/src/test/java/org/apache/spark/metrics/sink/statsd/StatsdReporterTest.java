@@ -2,9 +2,9 @@ package org.apache.spark.metrics.sink.statsd;
 
 
 import com.codahale.metrics.*;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -14,24 +14,22 @@ import static junit.framework.TestCase.assertTrue;
 
 public class StatsdReporterTest {
 
-    private MetricFormatter testFormatter() {
+    private MetricFormatter formatter;
+
+    @Before
+    public void setupFormatter() {
         InstanceDetailsProvider provider = new InstanceDetailsProviderMock(
                 "test-app-01", "Test Spark App",
                 InstanceType.DRIVER, "test-instance-01", "default");
         String[] tags = {};
-        return new MetricFormatter(provider, "spark", tags);
+        this.formatter = new MetricFormatter(provider, "spark", tags);
     }
 
     @Test
-    public void testGauges() throws IOException {
+    public void testGauges() throws Exception {
         final int testUdpPort = 4440;
         try (DatagramTestServer server = DatagramTestServer.run(testUdpPort)) {
-            StatsdReporter reporter = StatsdReporter
-                    .forRegistry(null)
-                    .formatter(testFormatter())
-                    .host("localhost")
-                    .port(testUdpPort)
-                    .build();
+            StatsdReporter reporter = buildTestReporter(testUdpPort);
 
             SortedMap<String, Gauge> gauges = new TreeMap<>();
             gauges.put("test-app-01.driver.TestGaugeInt", () -> 42);
@@ -39,7 +37,7 @@ public class StatsdReporterTest {
 
             reporter.report(gauges, new TreeMap<>(), new TreeMap<>(), new TreeMap<>(), new TreeMap<>());
 
-            pause(100); // Pausing to let DatagramTestServer collect all messages before the assertion
+            sleep(100); // Pausing to let DatagramTestServer collect all messages before the assertion
 
             // Check that both gauge metrics were received and app id is dropped
             assertTrue(server.receivedMessages().stream().allMatch(s -> s.startsWith("spark.driver.testgauge")));
@@ -49,17 +47,11 @@ public class StatsdReporterTest {
 
         }
     }
-
     @Test
-    public void testCounters() throws IOException {
+    public void testCounters() throws Exception {
         final int testUdpPort = 4441;
         try (DatagramTestServer server = DatagramTestServer.run(testUdpPort)) {
-            StatsdReporter reporter = StatsdReporter
-                    .forRegistry(null)
-                    .formatter(testFormatter())
-                    .host("localhost")
-                    .port(testUdpPort)
-                    .build();
+            StatsdReporter reporter = buildTestReporter(testUdpPort);
 
             SortedMap<String, Counter> counters = new TreeMap<>();
             Counter counter = new Counter();
@@ -69,7 +61,7 @@ public class StatsdReporterTest {
 
             reporter.report(new TreeMap<>(), counters, new TreeMap<>(), new TreeMap<>(), new TreeMap<>());
 
-            pause(100);
+            sleep(100);
 
             assertTrue(server.receivedMessages().stream().allMatch(s -> s.startsWith("spark.driver.testcounter")));
             assertTrue(server.receivedMessages().stream().allMatch(s -> s.endsWith(":3|c")));
@@ -78,15 +70,10 @@ public class StatsdReporterTest {
     }
 
     @Test
-    public void testHistograms() throws IOException {
+    public void testHistograms() throws Exception {
         final int testUdpPort = 4442;
         try (DatagramTestServer server = DatagramTestServer.run(testUdpPort)) {
-            StatsdReporter reporter = StatsdReporter
-                    .forRegistry(null)
-                    .formatter(testFormatter())
-                    .host("localhost")
-                    .port(testUdpPort)
-                    .build();
+            StatsdReporter reporter = buildTestReporter(testUdpPort);
 
             SortedMap<String, Histogram> histograms = new TreeMap<>();
             Histogram histogram = new Histogram(new ExponentiallyDecayingReservoir());
@@ -99,7 +86,7 @@ public class StatsdReporterTest {
 
             reporter.report(new TreeMap<>(), new TreeMap<>(), histograms, new TreeMap<>(), new TreeMap<>());
 
-            pause(100);
+            sleep(100);
 
             String prefix = "spark.driver.testhistogram.";
             assertThatExists(server, prefix, "count", "5|g");
@@ -118,15 +105,10 @@ public class StatsdReporterTest {
     }
 
     @Test
-    public void testMeters() throws IOException {
+    public void testMeters() throws Exception {
         final int testUdpPort = 4443;
         try (DatagramTestServer server = DatagramTestServer.run(testUdpPort)) {
-            StatsdReporter reporter = StatsdReporter
-                    .forRegistry(null)
-                    .formatter(testFormatter())
-                    .host("localhost")
-                    .port(testUdpPort)
-                    .build();
+            StatsdReporter reporter = buildTestReporter(testUdpPort);
 
             SortedMap<String, Meter> meters = new TreeMap<>();
             Meter meter = new Meter();
@@ -136,7 +118,7 @@ public class StatsdReporterTest {
 
             reporter.report(new TreeMap<>(), new TreeMap<>(), new TreeMap<>(), meters, new TreeMap<>());
 
-            pause(100);
+            sleep(100);
 
             String prefix = "spark.driver.testmeter.";
             assertThatExists(server, prefix, "count", "3|g");
@@ -150,26 +132,21 @@ public class StatsdReporterTest {
     }
 
     @Test
-    public void testTimers() throws IOException {
+    public void testTimers() throws Exception {
         final int testUdpPort = 4444;
         try (DatagramTestServer server = DatagramTestServer.run(testUdpPort)) {
-            StatsdReporter reporter = StatsdReporter
-                    .forRegistry(null)
-                    .formatter(testFormatter())
-                    .host("localhost")
-                    .port(testUdpPort)
-                    .build();
+            StatsdReporter reporter = buildTestReporter(testUdpPort);
 
             SortedMap<String, Timer> timers = new TreeMap<>();
             Timer timer = new Timer();
             Timer.Context timerContext = timer.time();
-            pause(100);
+            sleep(100);
             timerContext.stop();
             timers.put("test-app-01.driver.TestTimer", timer);
 
             reporter.report(new TreeMap<>(), new TreeMap<>(),new TreeMap<>(), new TreeMap<>(), timers);
 
-            pause(100);
+            sleep(100);
 
             String prefix = "spark.driver.testtimer.";
             assertThatExists(server, prefix, "max", "|ms");
@@ -190,12 +167,13 @@ public class StatsdReporterTest {
         }
     }
 
-    private void pause(long millis) {
-        try {
-            sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    private StatsdReporter buildTestReporter(int testUdpPort) {
+        return StatsdReporter
+                .forRegistry(null)
+                .formatter(formatter)
+                .host("localhost")
+                .port(testUdpPort)
+                .build();
     }
 
     private void assertThatExists(DatagramTestServer server, String expectedMetricNamePrefix, String expectedMetricArgumentName, String expectedValueAndType) {
@@ -203,5 +181,4 @@ public class StatsdReporterTest {
                 s -> s.startsWith(expectedMetricNamePrefix + expectedMetricArgumentName)
                         && s.endsWith(expectedValueAndType)));
     }
-
 }

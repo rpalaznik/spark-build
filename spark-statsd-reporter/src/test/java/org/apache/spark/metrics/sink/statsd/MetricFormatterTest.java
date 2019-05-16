@@ -3,7 +3,7 @@ package org.apache.spark.metrics.sink.statsd;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.apache.spark.metrics.sink.statsd.MetricType.*;
+import static org.apache.spark.metrics.sink.statsd.MetricType.GAUGE;
 
 
 
