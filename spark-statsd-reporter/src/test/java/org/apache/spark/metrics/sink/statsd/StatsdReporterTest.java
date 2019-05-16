@@ -42,7 +42,7 @@ public class StatsdReporterTest {
             pause(100); // Pausing to let DatagramTestServer collect all messages before the assertion
 
             // Check that both gauge metrics were received and app id is dropped
-            assertTrue(server.receivedMessages().stream().allMatch(s -> s.startsWith("spark.driver.TestGauge")));
+            assertTrue(server.receivedMessages().stream().allMatch(s -> s.startsWith("spark.driver.testgauge")));
             assertTrue(server.receivedMessages().stream().anyMatch(s -> s.endsWith(":42|g")));
             assertTrue(server.receivedMessages().stream().anyMatch(s -> s.endsWith(":123.12|g")));
             assertEquals(2, server.receivedMessages().size());
@@ -71,7 +71,7 @@ public class StatsdReporterTest {
 
             pause(100);
 
-            assertTrue(server.receivedMessages().stream().allMatch(s -> s.startsWith("spark.driver.TestCounter")));
+            assertTrue(server.receivedMessages().stream().allMatch(s -> s.startsWith("spark.driver.testcounter")));
             assertTrue(server.receivedMessages().stream().allMatch(s -> s.endsWith(":3|c")));
             assertEquals(1, server.receivedMessages().size());
         }
@@ -101,7 +101,7 @@ public class StatsdReporterTest {
 
             pause(100);
 
-            String prefix = "spark.driver.TestHistogram.";
+            String prefix = "spark.driver.testhistogram.";
             assertThatExists(server, prefix, "count", "5|g");
             assertThatExists(server, prefix, "max", "6|ms");
             assertThatExists(server, prefix, "mean", "2.60|ms");
@@ -138,7 +138,7 @@ public class StatsdReporterTest {
 
             pause(100);
 
-            String prefix = "spark.driver.TestMeter.";
+            String prefix = "spark.driver.testmeter.";
             assertThatExists(server, prefix, "count", "3|g");
             assertThatExists(server, prefix, "m1_rate", "0.00|ms");
             assertThatExists(server, prefix, "m5_rate", "0.00|ms");
@@ -171,7 +171,7 @@ public class StatsdReporterTest {
 
             pause(100);
 
-            String prefix = "spark.driver.TestTimer.";
+            String prefix = "spark.driver.testtimer.";
             assertThatExists(server, prefix, "max", "|ms");
             assertThatExists(server, prefix, "mean", "|ms");
             assertThatExists(server, prefix, "min", "|ms");
