@@ -4,23 +4,31 @@ package org.apache.spark.metrics.sink.statsd;
 import com.codahale.metrics.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static java.lang.Thread.sleep;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class StatsdReporterTest {
 
     private MetricFormatter formatter;
 
     @Before
     public void setupFormatter() {
-        InstanceDetailsProvider provider = new InstanceDetailsProviderMock(
+        InstanceDetailsProvider provider = Mockito.mock(InstanceDetailsProvider.class);
+
+        when(provider.getInstanceDetails()).thenReturn(Optional.of(new InstanceDetails(
                 "test-app-01", "Test Spark App",
-                InstanceType.DRIVER, "test-instance-01", "default");
+                InstanceType.DRIVER, "test-instance-01", "default")));
         String[] tags = {};
         this.formatter = new MetricFormatter(provider, "spark", tags);
     }
