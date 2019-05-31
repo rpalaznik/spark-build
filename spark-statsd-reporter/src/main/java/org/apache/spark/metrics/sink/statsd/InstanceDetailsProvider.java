@@ -35,11 +35,12 @@ class InstanceDetailsProvider  {
 
     InstanceDetails buildInstanceDetails() {
         SparkConf sparkConf = SparkEnv.get().conf();
+        String instanceType = System.getenv("INSTANCE_TYPE");
         return new InstanceDetails(
                 sparkConf.getAppId(),
                 sparkConf.get("spark.app.name"),
                 System.getenv("SPARK_APP_ORIGIN"),
-                InstanceType.valueOf(SparkEnv.get().metricsSystem().instance().toUpperCase()),
+                instanceType != null ? InstanceType.valueOf(instanceType.toUpperCase()) : null,
                 sparkConf.get("spark.executor.id"),
                 sparkConf.get("spark.metrics.namespace", "default")
         );
