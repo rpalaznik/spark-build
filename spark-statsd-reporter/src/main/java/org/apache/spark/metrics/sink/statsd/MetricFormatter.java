@@ -70,10 +70,13 @@ class MetricFormatter {
         //if instance details are available, enrich metric with tags
         return instanceDetailsProvider.getInstanceDetails().map(instanceDetails -> {
             List<String> extractedTags = new ArrayList<>(asList(
-                    prefix + "_origin=" + instanceDetails.getApplicationOrigin(),
                     prefix + "_app_name=" + instanceDetails.getApplicationName(),
                     prefix + "_instance_id=" + instanceDetails.getInstanceId()
             ));
+
+            if (instanceDetails.getApplicationOrigin() != null) {
+                extractedTags.add(prefix + "_origin=" + instanceDetails.getApplicationOrigin());
+            }
 
             String namespace = instanceDetails.getNamespace();
 
