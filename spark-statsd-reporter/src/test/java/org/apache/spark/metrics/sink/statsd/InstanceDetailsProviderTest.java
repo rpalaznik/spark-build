@@ -1,10 +1,11 @@
 package org.apache.spark.metrics.sink.statsd;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
 import org.apache.spark.metrics.MetricsSystem;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
@@ -24,6 +25,7 @@ public class InstanceDetailsProviderTest {
 
     @Mock SparkEnv env;
     @Mock MetricsSystem metricsSystem;
+    @Rule private final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     private static final String appName = "test-app";
     private static final String appId = "test-id";
@@ -130,6 +132,28 @@ public class InstanceDetailsProviderTest {
             assertEquals(appId, details.getApplicationId());
             assertEquals(InstanceType.DRIVER, details.getInstanceType());
             assertEquals(execId, details.getInstanceId());
+        });
+    }
+
+    @Test
+    public void testSparkAppOrigin() {
+        PowerMockito.mockStatic(SparkEnv.class);
+        SparkConf conf = getDefaultSparkConf();
+        final String origin = "spark-test";
+
+        when(metricsSystem.instance()).thenReturn("driver");
+        when(env.metricsSystem()).thenReturn(metricsSystem);
+        when(env.conf()).thenReturn(conf);
+        when(SparkEnv.get()).thenReturn(env);
+
+        environmentVariables.set("SPARK_APP_ORIGIN", origin);
+
+        InstanceDetailsProvider provider = new InstanceDetailsProvider();
+        Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
+
+        assertTrue(instanceDetails.isPresent());
+        instanceDetails.ifPresent(details -> {
+            assertEquals(origin, details.getApplicationOrigin());
         });
     }
 }
