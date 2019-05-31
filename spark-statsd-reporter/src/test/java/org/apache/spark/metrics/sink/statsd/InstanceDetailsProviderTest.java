@@ -45,11 +45,11 @@ public class InstanceDetailsProviderTest {
     public void testInitialization() {
         PowerMockito.mockStatic(SparkEnv.class);
         SparkConf conf = getDefaultSparkConf();
+        final String instanceType = "driver";
 
-        when(metricsSystem.instance()).thenReturn("driver");
-        when(env.metricsSystem()).thenReturn(metricsSystem);
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
+        environmentVariables.set("INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = spy(InstanceDetailsProvider.class);
         provider.getInstanceDetails();
@@ -62,11 +62,11 @@ public class InstanceDetailsProviderTest {
     public void testExecutorInstanceDetails() {
         PowerMockito.mockStatic(SparkEnv.class);
         SparkConf conf = getDefaultSparkConf();
+        final String instanceType = "executor";
 
-        when(metricsSystem.instance()).thenReturn("executor");
-        when(env.metricsSystem()).thenReturn(metricsSystem);
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
+        environmentVariables.set("INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
@@ -89,12 +89,11 @@ public class InstanceDetailsProviderTest {
         SparkConf conf = getDefaultSparkConf();
         conf.set("spark.app.id", applicationId);
         conf.set("spark.executor.id", applicationId);
+        final String instanceType = "driver";
 
-
-        when(metricsSystem.instance()).thenReturn("driver");
-        when(env.metricsSystem()).thenReturn(metricsSystem);
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
+        environmentVariables.set("INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
@@ -116,11 +115,11 @@ public class InstanceDetailsProviderTest {
         String namespace = "test_namespace";
         SparkConf conf = getDefaultSparkConf();
         conf.set("spark.metrics.namespace", namespace);
+        final String instanceType = "driver";
 
-        when(metricsSystem.instance()).thenReturn("driver");
-        when(env.metricsSystem()).thenReturn(metricsSystem);
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
+        environmentVariables.set("INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
@@ -141,8 +140,6 @@ public class InstanceDetailsProviderTest {
         SparkConf conf = getDefaultSparkConf();
         final String origin = "spark-test";
 
-        when(metricsSystem.instance()).thenReturn("driver");
-        when(env.metricsSystem()).thenReturn(metricsSystem);
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
 
