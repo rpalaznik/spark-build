@@ -22,7 +22,7 @@ public class StatsdSink implements Sink {
 
     public StatsdSink(Properties properties, MetricRegistry registry, org.apache.spark.SecurityManager securityMgr) {
         logger.info("Starting StatsdSink with properties:\n" + properties.toString());
-        this.prefix = MetricRegistry.name(MANDATORY_PREFIX, properties.getProperty(Keys.PREFIX, Defaults.PREFIX));
+        this.prefix = MetricRegistry.name(properties.getProperty(Keys.PREFIX, Defaults.PREFIX),MANDATORY_PREFIX);
         this.pollInterval = Integer.parseInt(properties.getProperty(Keys.POLL_INTERVAL, Defaults.POLL_INTERVAL));
         this.pollUnit = TimeUnit.valueOf(properties.getProperty(Keys.POLL_UNIT, Defaults.POLL_UNIT).toUpperCase());
 

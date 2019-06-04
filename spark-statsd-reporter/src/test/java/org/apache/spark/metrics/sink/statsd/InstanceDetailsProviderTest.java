@@ -2,7 +2,6 @@ package org.apache.spark.metrics.sink.statsd;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkEnv;
-import org.apache.spark.metrics.MetricsSystem;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -24,7 +23,6 @@ import static org.mockito.Mockito.*;
 public class InstanceDetailsProviderTest {
 
     @Mock SparkEnv env;
-    @Mock MetricsSystem metricsSystem;
     @Rule private final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     private static final String appName = "test-app";
@@ -49,7 +47,7 @@ public class InstanceDetailsProviderTest {
 
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
-        environmentVariables.set("INSTANCE_TYPE", instanceType);
+        environmentVariables.set("SPARK_INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = spy(InstanceDetailsProvider.class);
         provider.getInstanceDetails();
@@ -66,7 +64,7 @@ public class InstanceDetailsProviderTest {
 
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
-        environmentVariables.set("INSTANCE_TYPE", instanceType);
+        environmentVariables.set("SPARK_INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
@@ -93,7 +91,7 @@ public class InstanceDetailsProviderTest {
 
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
-        environmentVariables.set("INSTANCE_TYPE", instanceType);
+        environmentVariables.set("SPARK_INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
@@ -119,7 +117,7 @@ public class InstanceDetailsProviderTest {
 
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
-        environmentVariables.set("INSTANCE_TYPE", instanceType);
+        environmentVariables.set("SPARK_INSTANCE_TYPE", instanceType);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();
@@ -143,7 +141,7 @@ public class InstanceDetailsProviderTest {
         when(env.conf()).thenReturn(conf);
         when(SparkEnv.get()).thenReturn(env);
 
-        environmentVariables.set("SPARK_APP_ORIGIN", origin);
+        environmentVariables.set("SPARK_APPLICATION_ORIGIN", origin);
 
         InstanceDetailsProvider provider = new InstanceDetailsProvider();
         Optional<InstanceDetails> instanceDetails = provider.getInstanceDetails();

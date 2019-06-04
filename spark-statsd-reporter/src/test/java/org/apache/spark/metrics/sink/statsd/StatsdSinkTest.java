@@ -50,7 +50,7 @@ public class StatsdSinkTest {
             sleep(100);
 
             // Provided port, prefix and tags check
-            assertEquals("spark.myprefix.test_gauge,foo=bar:1|g", server.receivedMessages().get(0));
+            assertEquals("myprefix.spark.test_gauge,foo=bar:1|g", server.receivedMessages().get(0));
         }
     }
 }
