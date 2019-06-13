@@ -15,14 +15,16 @@ function upload_to_s3 {
     aws s3 cp --acl public-read "${DIST_DIR}/${SPARK_DIST}" "${S3_URL}"
 }
 
-function set_hadoop_versions {
+function set_versions {
+    SCALA_VERSIONS=( "2.11" "2.12" )
     HADOOP_VERSIONS=( "2.7" "2.9" )
 }
 
-# rename build/dist/spark-*.tgz to build/dist/spark-<TAG>.tgz
+# rename build/dist/spark-*.tgz to build/dist/spark-<TAG>-bin-scala-<SCALA VERSION>-hadoop-<HADOOP VERSION>.tgz
+# e.g.: spark-2.4.3-bin-scala-2.12-hadoop-2.9.tgz
 # globals: $SPARK_VERSION
 function rename_dist {
-    SPARK_DIST_DIR="spark-${SPARK_VERSION}-bin-${HADOOP_VERSION}"
+    SPARK_DIST_DIR="spark-${SPARK_VERSION}-bin-scala-${SCALA_VERSION}-hadoop-${HADOOP_VERSION}"
     SPARK_DIST="${SPARK_DIST_DIR}.tgz"
 
     mkdir -p "${SPARK_DIST_DIR}"
@@ -38,24 +40,30 @@ function rename_dist {
 
 
 function publish_dists() {
-    set_hadoop_versions
-    for HADOOP_VERSION in "${HADOOP_VERSIONS[@]}"
+    set_versions
+    for SCALA_VERSION in "${SCALA_VERSIONS[@]}"
     do
-        if does_profile_exist "hadoop-${HADOOP_VERSION}"; then
-            publish_dist "${HADOOP_VERSION}"
+        if does_profile_exist "scala-${SCALA_VERSION}"; then
+            for HADOOP_VERSION in "${HADOOP_VERSIONS[@]}"
+            do
+                if does_profile_exist "hadoop-${HADOOP_VERSION}"; then
+                    publish_dist "${SCALA_VERSION}" "${HADOOP_VERSION}"
+                fi
+            done
         fi
     done
 }
 
-# $1: hadoop version (e.g. "2.6")
+# $1: scala version  (e.g. "2.11")
+# $2: hadoop version (e.g. "2.6")
 function publish_dist() {
     SPARK_DIR=${SPARK_DIR} \
-        make prod-dist -e HADOOP_VERSION=$1
+        make prod-dist -e SCALA_VERSION=$1 HADOOP_VERSION=$2
     rename_dist
     AWS_ACCESS_KEY_ID=${PROD_AWS_ACCESS_KEY_ID} \
         AWS_SECRET_ACCESS_KEY=${PROD_AWS_SECRET_ACCESS_KEY} \
         S3_URL="s3://${PROD_S3_BUCKET}/${PROD_S3_PREFIX}/" \
-        upload_to_s3
+    upload_to_s3
     make clean-dist
 }
 
