@@ -5,14 +5,17 @@
 
 set -e -x -o pipefail
 
-# $1: profile (e.g. "hadoop-2.6")
+# $1: profile (e.g. "hadoop-2.7")
 function does_profile_exist() {
     (cd "${SPARK_DIR}" && ./build/mvn help:all-profiles | grep "$1")
 }
 
-# uploads build/spark/spark-*.tgz to S3
-function upload_to_s3 {
-    aws s3 cp --acl public-read "${DIST_DIR}/${SPARK_DIST}" "${S3_URL}"
+# uploads build/spark/spark-*.tgz to S3 or saves locally
+function store_distributions {
+    if [ -n "${DIST_DESTINATION_DIR}" ]; # If set, save a copy locally instead
+      then cp "${DIST_DIR}/${SPARK_DIST}" "$DIST_DESTINATION_DIR";
+      else aws s3 cp --acl public-read "${DIST_DIR}/${SPARK_DIST}" "${S3_URL}";
+    fi
 }
 
 function set_versions {
@@ -58,12 +61,12 @@ function publish_dists() {
 # $2: hadoop version (e.g. "2.6")
 function publish_dist() {
     SPARK_DIR=${SPARK_DIR} \
-        make prod-dist -e SCALA_VERSION=$1 HADOOP_VERSION=$2
+        make prod-dist -e SCALA_VERSION="$1" HADOOP_VERSION="$2"
     rename_dist
     AWS_ACCESS_KEY_ID=${PROD_AWS_ACCESS_KEY_ID} \
         AWS_SECRET_ACCESS_KEY=${PROD_AWS_SECRET_ACCESS_KEY} \
         S3_URL="s3://${PROD_S3_BUCKET}/${PROD_S3_PREFIX}/" \
-    upload_to_s3
+    store_distributions
     make clean-dist
 }
 
@@ -71,7 +74,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SPARK_DIR="${DIR}/../../spark"
 SPARK_BUILD_DIR="${DIR}/.."
 DIST_DIR="${SPARK_BUILD_DIR}/build/dist"
-SPARK_VERSION=${GIT_BRANCH#origin/tags/custom-} # e.g. "2.2.1"
+SPARK_VERSION=${SPARK_VERSION:-${GIT_BRANCH#origin/tags/custom-}} # e.g. "2.2.1"
 
 pushd "${SPARK_BUILD_DIR}"
 publish_dists

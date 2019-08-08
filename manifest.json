@@ -3,28 +3,28 @@
     "default_spark_dist": {
         "scala_version": "2.12",
         "hadoop_version": "2.9",
-        "uri": "https://rpalaznik-dev.s3.amazonaws.com/dcos-54709/spark-2.4.0-bin-scala-2.12-hadoop-2.9.tgz"
+        "uri": "https://downloads.mesosphere.io/spark/assets/spark-2.4.3-bin-scala-2.12-hadoop-2.9.tgz"
     },
     "spark_dist": [
         {
             "scala_version": "2.12",
             "hadoop_version": "2.9",
-            "uri": "https://rpalaznik-dev.s3.amazonaws.com/dcos-54709/spark-2.4.0-bin-scala-2.12-hadoop-2.9.tgz"
+            "uri": "https://downloads.mesosphere.io/spark/assets/spark-2.4.3-bin-scala-2.12-hadoop-2.9.tgz"
         },
         {
             "scala_version": "2.12",
             "hadoop_version": "2.7",
-            "uri": "https://rpalaznik-dev.s3.amazonaws.com/dcos-54709/spark-2.4.0-bin-scala-2.12-hadoop-2.7.tgz"
+            "uri": "https://downloads.mesosphere.io/spark/assets/spark-2.4.3-bin-scala-2.12-hadoop-2.7.tgz"
         },
         {
             "scala_version": "2.11",
             "hadoop_version": "2.9",
-            "uri": "https://rpalaznik-dev.s3.amazonaws.com/dcos-54709/spark-2.4.0-bin-scala-2.11-hadoop-2.9.tgz"
+            "uri": "https://downloads.mesosphere.io/spark/assets/spark-2.4.3-bin-scala-2.11-hadoop-2.9.tgz"
         },
         {
             "scala_version": "2.11",
             "hadoop_version": "2.7",
-            "uri": "https://rpalaznik-dev.s3.amazonaws.com/dcos-54709/spark-2.4.0-bin-scala-2.11-hadoop-2.7.tgz"
+            "uri": "https://downloads.mesosphere.io/spark/assets/spark-2.4.3-bin-scala-2.11-hadoop-2.7.tgz"
         }
     ]
 }
