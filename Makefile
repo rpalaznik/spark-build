@@ -30,6 +30,7 @@ manifest-dist:
 	popd
 
 HADOOP_VERSION ?= $(shell jq ".default_spark_dist.hadoop_version" "$(ROOT_DIR)/manifest.json")
+SCALA_VERSION ?= $(shell jq ".default_spark_dist.scala_version" "$(ROOT_DIR)/manifest.json")
 SPARK_DIR ?= $(ROOT_DIR)/spark
 $(SPARK_DIR):
 	git clone $(SPARK_REPO_URL) $(SPARK_DIR)
