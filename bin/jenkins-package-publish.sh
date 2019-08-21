@@ -46,7 +46,7 @@ function write_properties() {
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SPARK_BUILD_DIR=${DIR}/..
-SPARK_BUILD_VERSION=${GIT_BRANCH#origin/tags/}
+SPARK_BUILD_VERSION=${SPARK_BUILD_VERSION:-${GIT_BRANCH#origin/tags/}}
 
 pushd "${SPARK_BUILD_DIR}"
 make docker-login
