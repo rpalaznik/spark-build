@@ -3,7 +3,7 @@ import os
 import pytest
 import spark_utils as utils
 import json
-import subprocess
+import requests
 
 
 log = logging.getLogger(__name__)
@@ -35,8 +35,9 @@ def _read_dists_from_manifest():
 
 def _docker_image_exists(image):
     log.info(f'Checking if image {image} exists in the registry')
-    completed = subprocess.run(f"DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect {image}")
-    return completed.returncode == 0
+    name, tag = image.split(':')
+    r = requests.get(f"https://hub.docker.com/v2/repositories/{name}/tags/{tag}")
+    return r.status_code == 200
 
 
 def _test_spark_docker_image(dist):
