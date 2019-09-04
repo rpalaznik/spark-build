@@ -17,10 +17,10 @@ def test_spark_docker_images():
 
     spark_dists = _read_dists_from_manifest()
 
-    log.info("Testing the following docker distributions: ")
+    log.info("Testing docker distributions listed in manifest.json")
     for dist in spark_dists:
         if not _docker_image_exists(dist['image']):
-            pytest.skip("Can't found one of docker images listed in manifest.json in the registry")
+            pytest.skip(f"Can't found image {dist['image']} listed in manifest.json in the registry")
 
     for dist in spark_dists:
         log.info(f"Running a smoke test with {dist['image']}")
