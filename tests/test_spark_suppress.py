@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 # The debug messages we will be looking for in driver stderr
 OFFER_SUPPRESS_LOG_MSG = "Suppressing further offers\."
 OFFER_RECEIVED_LOG_MSG = "Received \d resource offers\."
-OFFER_REVIVIED_LOG_MSG = "Reviving offers due to a finished executor task\."
+OFFER_REVIVIED_LOG_MSG = "Reviving offers due to a failed executor task."
 
 
 def setup_module(module):
@@ -42,7 +42,7 @@ def test_offers_suppressed_with_lost_task():
     utils.restart_task_agent_and_verify_state(executor_ip, executor_task, "TASK_LOST")
 
     shakedown.wait_for_task_completion(driver_task_id, timeout_sec=utils.JOB_WAIT_TIMEOUT_SECONDS)
-    _check_logged_offers(driver_task_id, 2)
+    _check_logged_offers(driver_task_id, 1)
 
 
 def _launch_test_task(app_name):
