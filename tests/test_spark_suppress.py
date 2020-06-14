@@ -23,6 +23,7 @@ def setup_module(module):
 def teardown_module(module):
     utils.teardown_spark()
 
+
 @pytest.mark.sanity
 @pytest.mark.smoke
 def test_offers_suppressed():

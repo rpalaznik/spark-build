@@ -1,8 +1,6 @@
 import logging
 
-import dcos_utils
 import pytest
-import retrying
 import sdk_cmd
 import sdk_networks
 import sdk_tasks
@@ -67,9 +65,6 @@ def test_agent_restart_with_checkpointing_enabled():
 
     utils.restart_task_agent_and_verify_state(executor_ip, executor_task, "TASK_RUNNING")
     utils.restart_task_agent_and_verify_state(driver_ip, driver_task, "TASK_RUNNING")
-
-
-
 
 
 def _submit_job_and_get_tasks(extra_args=[]):
