@@ -46,7 +46,7 @@ def setup_spark(configure_security_spark, configure_universe):
 
 @pytest.mark.sanity
 def test_agent_restart_with_checkpointing_disabled():
-    (driver_task, executor_task) = next(_submit_job_and_get_tasks())
+    (driver_task_id, driver_task, executor_task) = _submit_job_and_get_tasks()
 
     driver_ip = sdk_networks.get_task_host(driver_task)
     executor_ip = sdk_networks.get_task_host(executor_task)
@@ -55,16 +55,20 @@ def test_agent_restart_with_checkpointing_disabled():
     utils.restart_task_agent_and_verify_state(driver_ip, driver_task, "TASK_RUNNING")
     utils.restart_task_agent_and_verify_state(executor_ip, executor_task, "TASK_LOST")
 
+    _kill_driver_task(driver_task_id)
+
 
 @pytest.mark.sanity
 def test_agent_restart_with_checkpointing_enabled():
-    (driver_task, executor_task) = next(_submit_job_and_get_tasks(extra_args=["--conf spark.mesos.checkpoint=true"]))
+    (driver_task_id, driver_task, executor_task) = _submit_job_and_get_tasks(extra_args=["--conf spark.mesos.checkpoint=true"])
 
     driver_ip = sdk_networks.get_task_host(driver_task)
     executor_ip = sdk_networks.get_task_host(executor_task)
 
     utils.restart_task_agent_and_verify_state(executor_ip, executor_task, "TASK_RUNNING")
     utils.restart_task_agent_and_verify_state(driver_ip, driver_task, "TASK_RUNNING")
+
+    _kill_driver_task(driver_task_id)
 
 
 def _submit_job_and_get_tasks(extra_args=[]):
@@ -77,13 +81,14 @@ def _submit_job_and_get_tasks(extra_args=[]):
     driver_task_id = utils.submit_job(app_url=utils.dcos_test_jar_url(),
                                       app_args="1 600",
                                       args=submit_args)
-    try:
-        sdk_tasks.check_running(app_name, 1, timeout_seconds=300)
-        driver_task = shakedown.get_task(driver_task_id, completed=False)
-        executor_task = shakedown.get_service_tasks(app_name)[0]
 
-        yield (driver_task, executor_task)
+    sdk_tasks.check_running(app_name, 1, timeout_seconds=300)
+    driver_task = shakedown.get_task(driver_task_id, completed=False)
+    executor_task = shakedown.get_service_tasks(app_name)[0]
 
-    finally:
-        log.info(f"Cleaning up. Attempting to kill driver: {driver_task_id}")
-        utils.kill_driver(driver_task_id)
+    return (driver_task_id, driver_task, executor_task)
+
+
+def _kill_driver_task(driver_task_id):
+    log.info(f"Cleaning up. Attempting to kill driver: {driver_task_id}")
+    utils.kill_driver(driver_task_id)
